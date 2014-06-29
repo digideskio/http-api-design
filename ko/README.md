@@ -77,6 +77,9 @@ Provide the full resource representation (i.e. the object with all
 attributes) whenever possible in the response. Always provide the full
 resource on 200 and 201 responses, including `PUT`/`PATCH` and `DELETE`
 requests, e.g.:
+응답을 보낼 때는 가능한 전체 리소스를 제공하라. (예를 들어 모든 오브젝트의 모든 속성을 제공하라.)
+200과 201응답을 보낼 때는 전체 리소스를 항상 제공하라. `PUT`/`PATCH`와 `DELETE`요청의
+경우에도 마찬가지다. 다음의 예를 참고하라.
 
 ```
 $ curl -X DELETE \  
@@ -95,6 +98,7 @@ Content-Type: application/json;charset=utf-8
 
 202 responses will not include the full resource representation,
 e.g.:
+202 응답의 경우에는 다음과 같이 전체 리소스를 제공하지 않는다.
 
 ```
 $ curl -X DELETE \  
@@ -112,6 +116,8 @@ Content-Type: application/json;charset=utf-8
 Accept serialized JSON on `PUT`/`PATCH`/`POST` request bodies, either
 instead of or in addition to form-encoded data. This creates symmetry
 with JSON-serialized response bodies, e.g.:
+`PUT`/`PATCH`/`POST` 요청의 본문에 직렬화된 JSON을 사용하라. 폼 데이터를 대체하거나
+같이 사용한다. 이렇게 함으로써 응답의 JSON 형태의 본문과 동일한 모습이 될 것이다.
 
 ```
 $ curl -X POST https://service.com/apps \
@@ -136,9 +142,12 @@ Give each resource an `id` attribute by default. Use UUIDs unless you
 have a very good reason not to. Don’t use IDs that won’t be globally
 unique across instances of the service or other resources in the
 service, especially auto-incrementing IDs.
+각 리소스에 기본적으로 `id` 속성을 할당하라. 사용하지 말아야 할 이유가 있지 않다면 UUID를 사용하라.
+서비스 인스턴스나 서비스의 다른 리소스 사이에서 유일한 값이 될 수 없는 ID를 사용하면 안된다.
+특히 자동으로 증가하는 ID는 사용하지 말것.
 
 Render UUIDs in downcased `8-4-4-4-12` format, e.g.:
-
+UUID는 다음의 예와 같이 소문자로 된 `8-4-4-4-12`와 같은 형태로 표현하라. 
 ```
 "id": "01234567-89ab-cdef-0123-456789abcdef"
 ```
@@ -148,6 +157,7 @@ Render UUIDs in downcased `8-4-4-4-12` format, e.g.:
 
 Provide `created_at` and `updated_at` timestamps for resources by default,
 e.g:
+기본적으로 리소스에 대해 `created_at`과 `updated_at` 타임스탬프를 제공하라.
 
 ```json
 {
@@ -160,12 +170,14 @@ e.g:
 
 These timestamps may not make sense for some resources, in which case
 they can be omitted.
+이런 타임스탬프는 일부 리소스의 경우에는 의미가 없을 수도 있는데 그런 경우에는 생략해도 된다.
 
 ### Use UTC times formatted in ISO8601
 ### ISO8601에 정의된 포맷으로 UTC 시간을 사용하라
 
 Accept and return times in UTC only. Render times in ISO8601 format,
 e.g.:
+UTC로만 시간 값을 주고 받아라. 시간은 ISO8601 형태로 표시하라.
 
 ```
 "finished_at": "2012-01-01T12:00:00Z"
@@ -175,20 +187,28 @@ e.g.:
 ### 일관된 패스 형태를 사용하라
 
 #### Resource names
+#### 리소스 이름
 
 Use the plural version of a resource name unless the resource in question is a singleton within the system (for example, in most systems a given user would only ever have one account). This keeps it consistent in the way you refer to particular resources.
+질의 중인 리소스가 시스템 내에서 하나만 존재하지는 것이 아니라면 리소스 이름에 복수형을 사용하라.
+(예를 들어 대부분의 시스템에서 특정 사용자는 하나의 계정만을 갖는다.) 이러한 방법을 사용하면
+특정한 리소스를 참조하는 방법의 일관성을 유지할 수 있다.
 
 #### Actions
+#### 액션
 
 Prefer endpoint layouts that don’t need any special actions for
 individual resources. In cases where special actions are needed, place
 them under a standard `actions` prefix, to clearly delineate them:
+개별 리소스에 특별한 액션이 필요하지 않는 종료점 레이아웃을 더 사용하라.(?) 특별한 액션이 필요한 경우
+특별한 액션을 일반적인 `actions` 접두 뒤에 두면 된다. 그렇게 함으로써 명확하게 
+특별한 액션을 설명할 수 있다.
 
 ```
 /resources/:resource/actions/:action
 ```
 
-e.g.
+예제:
 
 ```
 /runs/{run_id}/actions/stop
@@ -199,6 +219,7 @@ e.g.
 
 Use downcased and dash-separated path names, for alignment with
 hostnames, e.g:
+소문자를 사용하고 단어는 대시로 구별하여 패스의 이름을 사용하여 호스트명과 정렬을 맞춘다.
 
 ```
 service-api.com/users
@@ -207,6 +228,8 @@ service-api.com/app-setups
 
 Downcase attributes as well, but use underscore separators so that
 attribute names can be typed without quotes in JavaScript, e.g.:
+속성도 소문자를 사용한다. 그러나 구분자로 언더스코어를 사용하여 속성의 이름이 자바스크립트에서도
+따옴표 없이 표현할 수 있도록 한다.
 
 ```
 service_class: "first"
@@ -216,6 +239,7 @@ service_class: "first"
 ### 외래키 관계는 중첩시켜라
 
 Serialize foreign key references with a nested object, e.g.:
+외래키로 참조하는 내용은 중첩된 객체로 직렬화한다.
 
 ```json
 {
@@ -228,6 +252,7 @@ Serialize foreign key references with a nested object, e.g.:
 ```
   
 Instead of e.g:
+다음과 같이 사용하지 않는다.
 
 ```json
 {
@@ -240,6 +265,8 @@ Instead of e.g:
 This approach makes it possible to inline more information about the
 related resource without having to change the structure of the response
 or introduce more top-level response fields, e.g.:
+이런 방법을 사용하면 응답의 구조를 변경하거나 최상위 응답 필드를 추가하지 않고도
+관련된 리소스에 대한 더 많은 정보를 포함시킬 수 있다.
 
 ```json
 {
