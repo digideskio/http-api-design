@@ -287,6 +287,9 @@ In some cases it may be inconvenient for end-users to provide IDs to
 identify a resource. For example, a user may think in terms of a Heroku
 app name, but that app may be identified by a UUID. In these cases you
 may want to accept both an id or name, e.g.:
+어떤 경우에는 최종 사용자가 리소스를 식별할 수 있는 ID 정보를 제공하는 일이 불편할 때도 있다.
+예를 들어 어떤 사용자가 Heroku 앱 이름을 알고 있지만 앱은 UUID로 구별하는 경우이다.
+이런 경우 id나 이름을 모두 받으면 좋을 것이다.
 
 ```
 $ curl https://service.com/apps/{app_id_or_name}
@@ -295,6 +298,7 @@ $ curl https://service.com/apps/www-prod
 ```
 
 Do not accept only names to the exclusion of IDs.
+ID를 제외하고 이름만 받지는 말아야 한다.
 
 ### Generate structured errors
 ### 구조적인 에러를 만들어라
@@ -303,6 +307,9 @@ Generate consistent, structured response bodies on errors. Include a
 machine-readable error `id`, a human-readable error `message`, and
 optionally a `url` pointing the client to further information about the
 error and how to resolve it, e.g.:
+에러의 경우 일관적이고 구조적인 형태로 응답을 만들어라. 컴퓨터가 읽을 수 있는 에러 `id`와
+사람이 읽을 수 있는 에러 `message`는 필수로, 에러에 대한 추가 정보와 에러를 해결하는 방법이 있는
+곳을 클라이언트에게 알려주는 `url`은 선택적으로 포함시켜라.
 
 ```
 HTTP/1.1 429 Too Many Requests
@@ -318,6 +325,7 @@ HTTP/1.1 429 Too Many Requests
 
 Document your error format and the possible error `id`s that clients may
 encounter.
+에러의 형식과 클라이언트가 맞닥뜨릴 수 있는 발생 가능한 에러 `id`를 문서화하라.
 
 ### Support caching with Etags
 ### Etags로 캐시할 수 있도록 지원하라
@@ -326,6 +334,8 @@ Include an `ETag` header in all responses, identifying the specific
 version of the returned resource. The user should be able to check for
 staleness in their subsequent requests by supplying the value in the
 `If-None-Match` header.
+`ETag`헤더를 모든 응답에 포함시켜 반환되는 리소스의 버전을 구별하라. 사용자는 이후의 요청에서
+`If-None-Match` 헤더에 값을 지정하여 변경 여부를 확인하게 될 것이다.
 
 ### Trace requests with Request-Ids
 ### Request Id로 요청을 추적하라
@@ -333,6 +343,8 @@ staleness in their subsequent requests by supplying the value in the
 Include a `Request-Id` header in each API response, populated with a
 UUID value. If both the server and client log these values, it will be
 helpful for tracing and debugging requests.
+UUID의 값을 포함하고 있는 `Request-Id`헤더를 각 API 응답에 포함시켜라.
+서버와 클라이언트 양쪽에서 이 값을 기록하면 요청을 추적하고 디버깅할 때 도움이 될 것이다.
 
 ### Paginate with Ranges
 ### 범위별로 페이지를 나눠라?
@@ -342,6 +354,9 @@ Use `Content-Range` headers to convey pagination requests. Follow the
 example of the [Heroku Platform API on Ranges](https://devcenter.heroku.com/articles/platform-api-reference#ranges)
 for the details of request and response headers, status codes, limits,
 ordering, and page-walking.
+대량의 데이터를 만드는 모든 응답은 페이지를 나눠라. `Content-Range`헤더를 사용하여 
+페이지로 구별된 응답을 전달하라. 요청과 응답 헤더, 상태 코드, 숫자 제한(?), 순서, 페이지 워킹(?)에 대한
+자세한 내용은 [Heroku Platform API on Ranges](https://devcenter.heroku.com/articles/platform-api-reference#ranges)의 예제를 따르라.
 
 ### Show rate limit status
 ### 사용량의 상태를 보여줘라?
