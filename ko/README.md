@@ -9,8 +9,6 @@ extracted from work on the [Heroku Platform API](https://devcenter.heroku.com/ar
 This guide informs additions to that API and also guides new internal
 APIs at Heroku. We hope it’s also of interest to API designers
 outside of Heroku.
-이 가이드를 통해 API에 포함되어야 하는 내용과 Heroku의 새로운 내부 API에 대해서도 알 수 있다. 
-Heroku외부의 API 설계자들에게 이 가이드가 도움이 되길 기대한다.
 
 Our goals here are consistency and focusing on business logic while
 avoiding design bikeshedding. We’re looking for _a good, consistent,
@@ -53,6 +51,7 @@ We welcome [contributions](CONTRIBUTING.md) to this guide.
 
 Return appropriate HTTP status codes with each response. Successful
 responses should be coded according to this guide:
+응답할 때마다 적절한 HTTP 상태 코드를 반환하라. 성공적인 응답의 경우 다음의 가이드에 따라 코드를 지정하라.
 
 * `200`: Request succeeded for a `GET` calls, and for `DELETE` or
   `PATCH` calls that complete synchronously
@@ -62,9 +61,14 @@ responses should be coded according to this guide:
   will be processed asynchronously
 * `206`: Request succeeded on `GET`, but only a partial response
   returned: see [above on ranges](#paginate-with-ranges)
+* `200`: `GET` 호출, 동기적으로 완료되는 `DELETE`나 `PATCH` 호출 요청의 성공시
+* `201`: 동기적으로 완료되는 `POST` 호출 요청의 성공시
+* `202`: 비동기적으로 처리될 `POST`, `DELETE`, `PATCH`을 받았을 때
+* `206`: `GET` 호출 요청의 성공시. 그러나 내용의 일부만 응답으로 반환될 때. [above on ranges](#paginate-with-ranges) 참조
 
 Refer to the [HTTP response code spec](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html)
 for guidance on status codes for user error and server error cases.
+사용자 에러나 서버 에러에 해당하는 상태 코드에 대한 가이드는 [HTTP 응답 코드 스펙](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html)을 참고하라.
 
 ### Provide full resources where available
 ### 전체 리소스를 제공 가능한 곳에서는 전체 리소스를 제공하라
