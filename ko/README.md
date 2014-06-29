@@ -4,10 +4,13 @@
 
 This guide describes a set of HTTP+JSON API design practices, originally
 extracted from work on the [Heroku Platform API](https://devcenter.heroku.com/articles/platform-api-reference).
+이 가이드에서는 [Heroku 플랫폼 API](https://devcenter.heroku.com/articles/platform-api-reference)를 만들 때의 경험을 바탕으로 HTTP+JSON API를 설계하는 방법에 대해 설명한다.
 
 This guide informs additions to that API and also guides new internal
 APIs at Heroku. We hope it’s also of interest to API designers
 outside of Heroku.
+이 가이드를 통해 API에 포함되어야 하는 내용과 Heroku의 새로운 내부 API에 대해서도 알 수 있다. 
+Heroku외부의 API 설계자들에게 이 가이드가 도움이 되길 기대한다.
 
 Our goals here are consistency and focusing on business logic while
 avoiding design bikeshedding. We’re looking for _a good, consistent,
@@ -19,32 +22,34 @@ cover all of the fundamentals of those in this guide.
 
 We welcome [contributions](CONTRIBUTING.md) to this guide.
 
-## Contents
+## 차례
 
-*  [Return appropriate status codes](#return-appropriate-status-codes)
-*  [Provide full resources where available](#provide-full-resources-where-available)
-*  [Accept serialized JSON in request bodies](#accept-serialized-json-in-request-bodies)
-*  [Provide resource (UU)IDs](#provide-resource-uuids)
-*  [Provide standard timestamps](#provide-standard-timestamps)
-*  [Use UTC times formatted in ISO8601](#use-utc-times-formatted-in-iso8601)
-*  [Use consistent path formats](#use-consistent-path-formats)
-*  [Downcase paths and attributes](#downcase-paths-and-attributes)
-*  [Nest foreign key relations](#nest-foreign-key-relations)
-*  [Support non-id dereferencing for convenience](#support-non-id-dereferencing-for-convenience)
-*  [Generate structured errors](#generate-structured-errors)
-*  [Support caching with Etags](#support-caching-with-etags)
-*  [Trace requests with Request-Ids](#trace-requests-with-request-ids)
-*  [Paginate with ranges](#paginate-with-ranges)
-*  [Show rate limit status](#show-rate-limit-status)
-*  [Version with Accepts header](#version-with-accepts-header)
-*  [Provide machine-readable JSON schema](#provide-machine-readable-json-schema)
-*  [Provide human-readable docs](#provide-human-readable-docs)
-*  [Provide executable examples](#provide-executable-examples)
-*  [Describe stability](#describe-stability)
-*  [Require TLS](#require-tls)
-*  [Pretty-print JSON by default](#pretty-print-json-by-default)
+*  [알맞은 상태 코드를 반환하라](#return-appropriate-status-codes)
+*  [전체 리소스를 제공 가능한 곳에서는 전체 리소스를 제공하라](#provide-full-resources-where-available)
+*  [요청의 본문에 직렬화된 JSON을 포함시켜라](#accept-serialized-json-in-request-bodies)
+*  [리소스의 (UU)ID를 제공하라](#provide-resource-uuids)
+*  [표준 타임스탬프를 제공하라](#provide-standard-timestamps)
+*  [ISO8601에 정의된 포맷으로 UTC 시간을 사용하라](#use-utc-times-formatted-in-iso8601)
+*  [일관된 패스 형태를 사용하라](#use-consistent-path-formats)
+*  [패스와 속성은 소문자로 만들어라](#downcase-paths-and-attributes)
+*  [외래키 관계는 중첩시켜라](#nest-foreign-key-relations)
+*  [편의를 위해 id없는 역참조?(dereferencing)을 지원하라](#support-non-id-dereferencing-for-convenience)
+*  [구조적인 에러를 만들어라](#generate-structured-errors)
+*  [Etags로 캐시할 수 있도록 지원하라](#support-caching-with-etags)
+*  [Request Id로 요청을 추적하라](#trace-requests-with-request-ids)
+*  [범위별로 페이지를 나눠라?](#paginate-with-ranges)
+*  [사용량의 상태를 보여줘라?](#show-rate-limit-status)
+*  [Accepts 헤더에 버전을 부여하라?](#version-with-accepts-header)
+*  [경로의 중첩을 최소화하라](#minimize-path-nesting)
+*  [기계가 읽을 수 있는 JSON 스키마를 제공하라](#provide-machine-readable-json-schema)
+*  [사람이 읽을 수 있는 문서를 제공하라](#provide-human-readable-docs)
+*  [실행 가능한 예제를 제공하라](#provide-executable-examples)
+*  [안정성을 표현하라?](#describe-stability)
+*  [TLS를 요구하라](#require-tls)
+*  [기본적으로 예쁜 모양의 JSON을 제공하라](#pretty-print-json-by-default)
 
 ### Return appropriate status codes
+### 알맞은 상태 코드를 반환하라
 
 Return appropriate HTTP status codes with each response. Successful
 responses should be coded according to this guide:
@@ -62,6 +67,7 @@ Refer to the [HTTP response code spec](http://www.w3.org/Protocols/rfc2616/rfc26
 for guidance on status codes for user error and server error cases.
 
 ### Provide full resources where available
+### 전체 리소스를 제공 가능한 곳에서는 전체 리소스를 제공하라
 
 Provide the full resource representation (i.e. the object with all
 attributes) whenever possible in the response. Always provide the full
@@ -97,6 +103,7 @@ Content-Type: application/json;charset=utf-8
 ```
 
 ### Accept serialized JSON in request bodies
+### 요청의 본문에 직렬화된 JSON을 포함시켜라
 
 Accept serialized JSON on `PUT`/`PATCH`/`POST` request bodies, either
 instead of or in addition to form-encoded data. This creates symmetry
@@ -119,6 +126,7 @@ $ curl -X POST https://service.com/apps \
 ```
 
 ### Provide resource (UU)IDs
+### 리소스의 (UU)ID를 제공하라
 
 Give each resource an `id` attribute by default. Use UUIDs unless you
 have a very good reason not to. Don’t use IDs that won’t be globally
@@ -132,6 +140,7 @@ Render UUIDs in downcased `8-4-4-4-12` format, e.g.:
 ```
 
 ### Provide standard timestamps
+### 표준 타임스탬프를 제공하라
 
 Provide `created_at` and `updated_at` timestamps for resources by default,
 e.g:
@@ -149,6 +158,7 @@ These timestamps may not make sense for some resources, in which case
 they can be omitted.
 
 ### Use UTC times formatted in ISO8601
+### ISO8601에 정의된 포맷으로 UTC 시간을 사용하라
 
 Accept and return times in UTC only. Render times in ISO8601 format,
 e.g.:
@@ -158,6 +168,7 @@ e.g.:
 ```
 
 ### Use consistent path formats
+### 일관된 패스 형태를 사용하라
 
 #### Resource names
 
@@ -180,6 +191,7 @@ e.g.
 ```
 
 ### Downcase paths and attributes
+### 패스와 속성은 소문자로 만들어라
 
 Use downcased and dash-separated path names, for alignment with
 hostnames, e.g:
@@ -197,6 +209,7 @@ service_class: "first"
 ```
 
 ### Nest foreign key relations
+### 외래키 관계는 중첩시켜라
 
 Serialize foreign key references with a nested object, e.g.:
 
@@ -237,6 +250,7 @@ or introduce more top-level response fields, e.g.:
 ```
 
 ### Support non-id dereferencing for convenience
+### 편의를 위해 id없는 역참조?(dereferencing)을 지원하라
 
 In some cases it may be inconvenient for end-users to provide IDs to
 identify a resource. For example, a user may think in terms of a Heroku
@@ -252,6 +266,7 @@ $ curl https://service.com/apps/www-prod
 Do not accept only names to the exclusion of IDs.
 
 ### Generate structured errors
+### 구조적인 에러를 만들어라
 
 Generate consistent, structured response bodies on errors. Include a
 machine-readable error `id`, a human-readable error `message`, and
@@ -274,6 +289,7 @@ Document your error format and the possible error `id`s that clients may
 encounter.
 
 ### Support caching with Etags
+### Etags로 캐시할 수 있도록 지원하라
 
 Include an `ETag` header in all responses, identifying the specific
 version of the returned resource. The user should be able to check for
@@ -281,12 +297,14 @@ staleness in their subsequent requests by supplying the value in the
 `If-None-Match` header.
 
 ### Trace requests with Request-Ids
+### Request Id로 요청을 추적하라
 
 Include a `Request-Id` header in each API response, populated with a
 UUID value. If both the server and client log these values, it will be
 helpful for tracing and debugging requests.
 
 ### Paginate with Ranges
+### 범위별로 페이지를 나눠라?
 
 Paginate any responses that are liable to produce large amounts of data.
 Use `Content-Range` headers to convey pagination requests. Follow the
@@ -295,6 +313,7 @@ for the details of request and response headers, status codes, limits,
 ordering, and page-walking.
 
 ### Show rate limit status
+### 사용량의 상태를 보여줘라?
 
 Rate limit requests from clients to protect the health of the service
 and maintain high service quality for other clients. You can use a
@@ -305,6 +324,7 @@ Return the remaining number of request tokens with each request in the
 `RateLimit-Remaining` response header.
 
 ### Version with Accepts header
+### Accepts 헤더에 버전을 부여하라?
 
 Version the API from the start. Use the `Accepts` header to communicate
 the version, along with a custom content type, e.g.:
@@ -317,6 +337,7 @@ Prefer not to have a default version, instead requiring clients to
 explicitly peg their usage to a specific version.
 
 ### Minimize path nesting
+### 경로의 중첩을 최소화하라
 
 In data models with nested parent/child resource relationships, paths
 may become deeply nested, e.g.:
@@ -338,12 +359,14 @@ case above where a dyno belongs to an app belongs to an org:
 ```
 
 ### Provide machine-readable JSON schema
+### 기계가 읽을 수 있는 JSON 스키마를 제공하라
 
 Provide a machine-readable schema to exactly specify your API. Use
 [prmd](https://github.com/interagent/prmd) to manage your schema, and ensure
 it validates with `prmd verify`.
 
 ### Provide human-readable docs
+### 사람이 읽을 수 있는 문서를 제공하라
 
 Provide human-readable documentation that client developers can use to
 understand your API.
@@ -362,6 +385,7 @@ information about:
 * Examples of using the API with clients in different languages.
 
 ### Provide executable examples
+### 실행 가능한 예제를 제공하라
 
 Provide executable examples that users can type directly into their
 terminals to see working API calls. To the greatest extent possible,
@@ -377,6 +401,7 @@ If you use [prmd](https://github.com/interagent/prmd) to generate Markdown
 docs, you will get examples for each endpoint for free.
 
 ### Describe stability
+### 안정성을 표현하라?
 
 Describe the stability of your API or its various endpoints according to
 its maturity and stability, e.g. with prototype/development/production
@@ -391,12 +416,14 @@ make backwards-incompatible changes, create a new API with an
 incremented version number.
 
 ### Require TLS
+### TLS를 요구하라
 
 Require TLS to access the API, without exception. It’s not worth trying
 to figure out or explain when it is OK to use TLS and when it’s not.
 Just require TLS for everything.
 
 ### Pretty-print JSON by default
+### 기본적으로 예쁜 모양의 JSON을 제공하라
 
 The first time a user sees your API is likely to be at the command line,
 using curl. It’s much easier to understand API responses at the
