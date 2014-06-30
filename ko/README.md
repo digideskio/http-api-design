@@ -1,5 +1,8 @@
 # HTTP API 설계 가이드
 
+## 주의
+초벌 번역으로 오역이 존재합니다. 읽을 때 참고하세요.
+
 ## 소개
 
 This guide describes a set of HTTP+JSON API design practices, originally
@@ -32,7 +35,7 @@ We welcome [contributions](CONTRIBUTING.md) to this guide.
 *  [패스와 속성은 소문자로 만들어라](#downcase-paths-and-attributes)
 *  [외래키 관계는 중첩시켜라](#nest-foreign-key-relations)
 *  [편의를 위해 id없는 역참조?(dereferencing)을 지원하라](#support-non-id-dereferencing-for-convenience)
-*  [구조적인 에러를 만들어라](#generate-structured-errors)
+*  [에러를 구조적으로 만들어라](#generate-structured-errors)
 *  [Etags로 캐시할 수 있도록 지원하라](#support-caching-with-etags)
 *  [Request Id로 요청을 추적하라](#trace-requests-with-request-ids)
 *  [범위별로 페이지를 나눠라?](#paginate-with-ranges)
@@ -301,7 +304,7 @@ Do not accept only names to the exclusion of IDs.
 ID를 제외하고 이름만 받지는 말아야 한다.
 
 ### Generate structured errors
-### 구조적인 에러를 만들어라
+### 에러를 구조적으로 만들어라
 
 Generate consistent, structured response bodies on errors. Include a
 machine-readable error `id`, a human-readable error `message`, and
@@ -365,15 +368,22 @@ Rate limit requests from clients to protect the health of the service
 and maintain high service quality for other clients. You can use a
 [token bucket algorithm](http://en.wikipedia.org/wiki/Token_bucket) to
 quantify request limits.
+서비스를 안정적으로 유지하기 위해 클라이언트로부터 오는 요청을 제한하고 다른 클라이언트에게 
+높은 수준의 서비스를 지속적으로 제공하라. 요청 제한을 측정하기 위해 
+[token bucket algorithm](http://en.wikipedia.org/wiki/Token_bucket)을
+사용할 수 있다.
 
 Return the remaining number of request tokens with each request in the
 `RateLimit-Remaining` response header.
+각 요청마다 `RateLimit-Remaining` 응답 헤더에 남은 요청 토큰의 수를 반환하라.
 
 ### Version with Accepts header
 ### Accepts 헤더에 버전을 부여하라?
 
 Version the API from the start. Use the `Accepts` header to communicate
 the version, along with a custom content type, e.g.:
+시작부터 API에 버전을 부여하라. `Accepts` 헤더를 사용하여 버전을 주고 받고 
+커스텀 컨텐트 타입을 함께 사용하라.
 
 ```
 Accept: application/vnd.heroku+json; version=3
@@ -381,12 +391,16 @@ Accept: application/vnd.heroku+json; version=3
 
 Prefer not to have a default version, instead requiring clients to
 explicitly peg their usage to a specific version.
+기본 버전을 사용하지 않는 편이 좋다. 대신 클라이언트가 명시적으로 특정한 버전을 사용할 것임을
+나타내도록 요구하라.
 
 ### Minimize path nesting
 ### 경로의 중첩을 최소화하라
 
 In data models with nested parent/child resource relationships, paths
 may become deeply nested, e.g.:
+중첩되어 있는 부모/자식의 리소스 관계로 이루어진 데이터 모델의 경우
+경로가 깊게 중첩될 수 있다.
 
 ```
 /orgs/{org_id}/apps/{app_id}/dynos/{dyno_id}
@@ -395,6 +409,9 @@ may become deeply nested, e.g.:
 Limit nesting depth by preferring to locate resources at the root
 path. Use nesting to indicate scoped collections. For example, for the
 case above where a dyno belongs to an app belongs to an org:
+루트 패스에서 리소스를 가리키는 방식을 사용하여 중첩되는 깊이를 제한하라.
+한정된 범위의 콜렉션을 가리키는데 중첩을 사용하라. 예를 들어 dyno가 org에 포함된
+app에 포함되는 위 예제와 같은 경우 다음과 같이 표현하라
 
 ```
 /orgs/{org_id}
@@ -410,18 +427,25 @@ case above where a dyno belongs to an app belongs to an org:
 Provide a machine-readable schema to exactly specify your API. Use
 [prmd](https://github.com/interagent/prmd) to manage your schema, and ensure
 it validates with `prmd verify`.
+기계가 읽을 수 있는 스키마를 제공하여 API를 정확하게 표현하라.
+[prmd](https://github.com/interagent/prmd)를 사용하여 스키마를 관리하고
+`prmd verify`로 유효성을 보장하라.
 
 ### Provide human-readable docs
 ### 사람이 읽을 수 있는 문서를 제공하라
 
 Provide human-readable documentation that client developers can use to
 understand your API.
+사람이 읽을 수 있는 문서를 제공하여 클라이언트 개발자들이 API를 이해하는데 이용할 수 있도록 하라.
 
 If you create a schema with prmd as described above, you can easily
 generate Markdown docs for all endpoints with with `prmd doc`.
+앞에서 설명한 prmd로 스키마을 만들었다면 `prmd doc` 명령어를 사용하여 
+최종 항목에 대한 마크다운 문서를 쉽게 만들 수 있다.
 
 In addition to endpoint details, provide an API overview with
 information about:
+최종 항목에 대한 상세한 정보와 더불어 다음과 같은 정보가 포함된 API 개요를 제공하라.
 
 * Authentication, including acquiring and using authentication tokens.
 * API stability and versioning, including how to select the desired API
@@ -429,6 +453,10 @@ information about:
 * Common request and response headers.
 * Error serialization format.
 * Examples of using the API with clients in different languages.
+* 인증, 인증 토큰을 획득하고 사용하는 방법이 포함되어야 한다.
+* API 안정성과 버전 정책, 필요한 API 버전을 선택하는 방법이 포함되어야 한다.
+* 공통으로 사용하는 요청, 응답 헤더
+* 다양한 언어로 이루어진 클라이언트로 API를 사용하는 예제
 
 ### Provide executable examples
 ### 실행 가능한 예제를 제공하라
@@ -437,6 +465,9 @@ Provide executable examples that users can type directly into their
 terminals to see working API calls. To the greatest extent possible,
 these examples should be usable verbatim, to minimize the amount of
 work a user needs to do to try the API, e.g.:
+사용자가 직접 터미널에 입력하여 동작하는 API 호출을 확인할 수 있는 실행 가능한 예제를 제공하라.
+이러한 예제는 있는 그대로 베껴서 사용가능하게 만들어  사용자가API를 시험해보기 위해 해야 하는
+일의 양을 최소화해야한다.
 
 ```
 $ export TOKEN=... # acquire from dashboard
@@ -445,6 +476,8 @@ $ curl -is https://$TOKEN@service.com/users
 
 If you use [prmd](https://github.com/interagent/prmd) to generate Markdown
 docs, you will get examples for each endpoint for free.
+[prmd](https://github.com/interagent/prmd)을 사용하여 마크다운 문서를 만든다면
+모든 최종 항목에 대한 예제를 쉽게 만들 수 있을 것이다.
 
 ### Describe stability
 ### 안정성을 표현하라?
@@ -452,14 +485,20 @@ docs, you will get examples for each endpoint for free.
 Describe the stability of your API or its various endpoints according to
 its maturity and stability, e.g. with prototype/development/production
 flags.
+API의 안정성이나 API의 성숙도와 안정성에 따른 다양한 최종 항목을 표현하라. 예를 들어,
+prototype/development/production 플래그를 제공하라.
 
 See the [Heroku API compatibility policy](https://devcenter.heroku.com/articles/api-compatibility-policy)
 for a possible stability and change management approach.
+사용할 수 있는 안정성과 변경 관리 방법은 [Heroku API compatibility policy](https://devcenter.heroku.com/articles/api-compatibility-policy)을 확인하라.
 
 Once your API is declared production-ready and stable, do not make
 backwards incompatible changes within that API version. If you need to
 make backwards-incompatible changes, create a new API with an
 incremented version number.
+API가 상용화 준비가 완료되어 있고 안정적이라고 선언한 후에는 해당 API 버전에서는
+하위 버전과 호환되지 않는 변경은 하지 말라. 하위 버전과 호환되지 않는 변경을 해야 한다면
+버전 숫자를 증가시킨 새로운 API를 만들어라.
 
 ### Require TLS
 ### TLS를 요구하라
@@ -467,6 +506,8 @@ incremented version number.
 Require TLS to access the API, without exception. It’s not worth trying
 to figure out or explain when it is OK to use TLS and when it’s not.
 Just require TLS for everything.
+API에 접근하기 위해 TLS를 요구하라. 예외는 없다. TLS를 사용해도 괜찮을 때와 그렇지 않을 때를
+알려고 하거나 설명하려고 노력할 필요는 없다. 모든 작업에 TLS를 요구하라.
 
 ### Pretty-print JSON by default
 ### 기본적으로 예쁜 모양의 JSON을 제공하라
@@ -475,6 +516,9 @@ The first time a user sees your API is likely to be at the command line,
 using curl. It’s much easier to understand API responses at the
 command-line if they are pretty-printed. For the convenience of these
 developers, pretty-print JSON responses, e.g.:
+처음 사용자가 curl을 사용하여 API를 보는 것은 명령어 라인에 있는 것과 같다.
+API가 예쁘게 출력된다면 명령어 라인에서 API 응답을 이해하는 것이 한층 쉬울 것이다.
+이런 개발자의 편의를 위해 JSON 응답은 예쁘게 출력하라.
 
 ```json
 {
@@ -488,6 +532,7 @@ developers, pretty-print JSON responses, e.g.:
 ```
 
 Instead of e.g.:
+다음과 같이 출력하면 안된다.
 
 ```json
 {"beta":false,"email":"alice@heroku.com","id":"01234567-89ab-cdef-0123-456789abcdef","last_login":"2012-01-01T12:00:00Z", "created_at":"2012-01-01T12:00:00Z","updated_at":"2012-01-01T12:00:00Z"}
@@ -495,9 +540,14 @@ Instead of e.g.:
 
 Be sure to include a trailing newline so that the user’s terminal prompt
 isn’t obstructed.
+마지막에 줄바꿈을 하여 사용자의 터미널 프롬프트가 불편한 곳에 위치하지 않도록 하라.
 
 For most APIs it will be fine performance-wise to pretty-print responses
 all the time. You may consider for performance-sensitive APIs not
 pretty-printing certain endpoints (e.g. very high traffic ones) or not
 doing it for certain clients (e.g. ones known to be used by headless
 programs).
+대부분의 API의 경우에는 성능이 괜찮으면서도 예쁘게 응답을 출력하면 된다. 
+최종 항목을 예쁘게 출력하지 않거나 (아주 높은 트래픽을 처리해야 하는 API의 경우)
+특정한 클라이언트에게만 예쁘게 출력하지 않는 (UI가 없는 프로그램에서 사용되는 것으로 알려진 API의 경우)
+성능이 중요한 요소인 API를 고려할 수도 있을 것이다
