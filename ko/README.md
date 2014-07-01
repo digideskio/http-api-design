@@ -12,16 +12,24 @@ extracted from work on the [Heroku Platform API](https://devcenter.heroku.com/ar
 This guide informs additions to that API and also guides new internal
 APIs at Heroku. We hope it’s also of interest to API designers
 outside of Heroku.
+이 가이드에서는 API에 추가되어야 하는 내용에 대해 알려주고 Heroku의 새로운 내부 API를 안내한다.
+이 가이드가 Heroku 외부의 API 설계자들에게도 흥미로운 내용이 되면 좋겠다.
 
 Our goals here are consistency and focusing on business logic while
 avoiding design bikeshedding. We’re looking for _a good, consistent,
 well-documented way_ to design APIs, not necessarily _the only/ideal
 way_.
+우리의 목표는 설계의 낭비를 피하면서 일관성을 유지하고 비즈니스 로직에 집중하는 것이다.
+_훌륭하고, 일관적이고 문서화가 잘 된_ API를 설계하는 방법을 찾는 것이지
+_유일한/이상적인 방법_을 찾는 것이 아니다.
 
 We assume you’re familiar with the basics of HTTP+JSON APIs and won’t
 cover all of the fundamentals of those in this guide.
+이 가이드는 HTTP+JSON API의 기초를 알고 있는 독자를 대상으로 하고 있으므로
+이 가이드에서는 HTTP+JSON API의 기초를 모두 대상으로 하지는 않을 것이다.
 
 We welcome [contributions](CONTRIBUTING.md) to this guide.
+이 가이드에 [기여](CONTRIBUTING.md)하는 것은 언제나 환영이다.
 
 ## 차례
 
