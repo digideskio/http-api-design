@@ -5,31 +5,20 @@
 
 ## 소개
 
-This guide describes a set of HTTP+JSON API design practices, originally
-extracted from work on the [Heroku Platform API](https://devcenter.heroku.com/articles/platform-api-reference).
 이 가이드에서는 [Heroku 플랫폼 API](https://devcenter.heroku.com/articles/platform-api-reference)를 만들 때의 경험을 바탕으로 HTTP+JSON API를 설계하는 방법에 대해 설명한다.
 
-This guide informs additions to that API and also guides new internal
-APIs at Heroku. We hope it’s also of interest to API designers
-outside of Heroku.
-이 가이드에서는 API에 추가되어야 하는 내용에 대해 알려주고 Heroku의 새로운 내부 API를 안내한다.
-이 가이드가 Heroku 외부의 API 설계자들에게도 흥미로운 내용이 되면 좋겠다.
+이 가이드에는 API에 추가되어야 하는 내용이 포함되어 있으며
+Heroku의 새로운 내부 API를 만들 때도 이 가이드를 활용한다.
+이 가이드가 Heroku 외부의 API 설계자들에게도 흥미로운 내용이 되길 바란다.
 
-Our goals here are consistency and focusing on business logic while
-avoiding design bikeshedding. We’re looking for _a good, consistent,
-well-documented way_ to design APIs, not necessarily _the only/ideal
-way_.
-우리의 목표는 설계의 낭비를 피하면서 일관성을 유지하고 비즈니스 로직에 집중하는 것이다.
-_훌륭하고, 일관적이고 문서화가 잘 된_ API를 설계하는 방법을 찾는 것이지
-_유일한/이상적인 방법_을 찾는 것이 아니다.
+이 가이드에서 달성하고자 하는 목표는 설계의 낭비를 피하면서 일관성을 유지하고 비즈니스 로직에 집중하는 것이다.
+우리는 _훌륭하고, 일관적이고 문서화가 잘 된_ API를 설계하는 방법을 찾는 것이며
+_유일한/이상적인 방법_을 찾아야만 하는 것은 아니다.
 
-We assume you’re familiar with the basics of HTTP+JSON APIs and won’t
-cover all of the fundamentals of those in this guide.
 이 가이드는 HTTP+JSON API의 기초를 알고 있는 독자를 대상으로 하고 있으므로
-이 가이드에서는 HTTP+JSON API의 기초를 모두 대상으로 하지는 않을 것이다.
+이 가이드에서 HTTP+JSON API의 기초적인 내용을 모두 다루지는 않을 것이다.
 
-We welcome [contributions](CONTRIBUTING.md) to this guide.
-이 가이드에 [기여](CONTRIBUTING.md)하는 것은 언제나 환영이다.
+이 가이드에 [기여](../CONTRIBUTING.md)하는 것은 언제나 환영이다.
 
 ## 차례
 
@@ -57,40 +46,21 @@ We welcome [contributions](CONTRIBUTING.md) to this guide.
 *  [TLS를 요구하라](#require-tls)
 *  [기본적으로 예쁜 모양의 JSON을 제공하라](#pretty-print-json-by-default)
 
-### Return appropriate status codes
 ### 알맞은 상태 코드를 반환하라
 
-Return appropriate HTTP status codes with each response. Successful
-responses should be coded according to this guide:
-응답할 때마다 적절한 HTTP 상태 코드를 반환하라. 성공적인 응답의 경우 다음의 가이드에 따라 코드를 지정하라.
+각 응답마다 적절한 HTTP 상태 코드를 반환하라. 성공적인 응답의 경우 다음의 가이드에 따라 코드를 지정하라.
 
-* `200`: Request succeeded for a `GET` calls, and for `DELETE` or
-  `PATCH` calls that complete synchronously
-* `201`: Request succeeded for a `POST` call that completes
-  synchronously
-* `202`: Request accepted for a `POST`, `DELETE`, or `PATCH` call that
-  will be processed asynchronously
-* `206`: Request succeeded on `GET`, but only a partial response
-  returned: see [above on ranges](#paginate-with-ranges)
-* `200`: `GET` 호출, 동기적으로 완료되는 `DELETE`나 `PATCH` 호출 요청의 성공시
-* `201`: 동기적으로 완료되는 `POST` 호출 요청의 성공시
-* `202`: 비동기적으로 처리될 `POST`, `DELETE`, `PATCH`을 받았을 때
-* `206`: `GET` 호출 요청의 성공시. 그러나 내용의 일부만 응답으로 반환될 때. [above on ranges](#paginate-with-ranges) 참조
+* `200`: `GET` 호출, 동기적으로 완료되는 `DELETE`나 `PATCH` 호출 요청이 성공했을 때
+* `201`: 동기적으로 완료되는 `POST` 호출 요청이 성공했을 때
+* `202`: 비동기적으로 처리될 `POST`, `DELETE`, `PATCH` 호출을 받았을 때
+* `206`: `GET` 호출 요청이 성공했으나 부분적인 응답이 반환될 때. [범위별로 페이지를 나눠라?](#paginate-with-ranges) 참조
 
-Refer to the [HTTP response code spec](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html)
-for guidance on status codes for user error and server error cases.
-사용자 에러나 서버 에러에 해당하는 상태 코드에 대한 가이드는 [HTTP 응답 코드 스펙](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html)을 참고하라.
+사용자 에러와 서버 에러의 경우에 해당하는 상태 코드에 대한 가이드는 [HTTP 응답 코드 스펙](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html)을 참고하라.
 
-### Provide full resources where available
-### 전체 리소스를 제공 가능한 곳에서는 전체 리소스를 제공하라
+### 전체 리소스를 제공할 수 있는 곳에서는 전체 리소스를 제공하라
 
-Provide the full resource representation (i.e. the object with all
-attributes) whenever possible in the response. Always provide the full
-resource on 200 and 201 responses, including `PUT`/`PATCH` and `DELETE`
-requests, e.g.:
-응답을 보낼 때는 가능한 전체 리소스를 제공하라. (예를 들어 모든 오브젝트의 모든 속성을 제공하라.)
-200과 201응답을 보낼 때는 전체 리소스를 항상 제공하라. `PUT`/`PATCH`와 `DELETE`요청의
-경우에도 마찬가지다. 다음의 예를 참고하라.
+응답을 보낼 때는 가능한 전체 리소스를 보여주는 결과를 제공하라. (즉, 오브젝트의 모든 속성을 제공하라.)
+200과 201응답을 보낼 때는 `PUT`/`PATCH`와 `DELETE` 요청의 경우를 포함하여 전체 리소스를 항상 제공하라.
 
 ```
 $ curl -X DELETE \  
@@ -107,9 +77,7 @@ Content-Type: application/json;charset=utf-8
 }
 ```
 
-202 responses will not include the full resource representation,
-e.g.:
-202 응답의 경우에는 다음과 같이 전체 리소스를 제공하지 않는다.
+202 응답의 경우에는 다음과 같이 전체 리소스를 보여주는 결과를 제공하지 않는다.
 
 ```
 $ curl -X DELETE \  
